@@ -92,6 +92,19 @@ class RenderTests(unittest.TestCase):
     def test_spare_haiku_body_starts_left_aligned(self):
         self.assertEqual(BUILTIN_THEMES["spare-haiku"].poem_align, "left")
 
+    def test_centered_title_centers_the_left_aligned_poem_measure(self):
+        poem = Poem(Path("p.poem"), "P", [TextLine("short line", 1)])
+        collection = Collection(Path("book.poem"), "B", "A", [poem], contents=False)
+        tex = render_collection(collection, load_theme("literary-classic"))
+        self.assertIn(r"\begin{PoemBody}{28.00}", tex)
+        self.assertIn(r"\leftskip=\PoemBodyInset\rightskip=\PoemBodyInset", tex)
+
+    def test_left_title_keeps_the_full_poem_measure(self):
+        poem = Poem(Path("p.poem"), "P", [TextLine("short line", 1)])
+        collection = Collection(Path("book.poem"), "B", "A", [poem], contents=False)
+        tex = render_collection(collection, load_theme("modern-minimal"))
+        self.assertIn(r"\begin{PoemBody}{0.00}", tex)
+
     def test_lines_stay_with_their_stanza_when_possible(self):
         from poemtex.model import StanzaBreak
         poem = Poem(Path("p.poem"), "P", [TextLine("one", 1), TextLine("two", 2), StanzaBreak(), TextLine("three", 4)])

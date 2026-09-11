@@ -32,6 +32,8 @@
   spacing.
 - Fixed alignment-dependent title-page composition and made `poem_align`
   effective while retaining explicit per-block overrides.
+- Centered-title themes now center the visual measure of left-aligned verse,
+  keeping poem headings and bodies compositionally connected.
 - PDF creation dates now reflect the build time unless the caller explicitly
   supplies `SOURCE_DATE_EPOCH` for a reproducible build.
 

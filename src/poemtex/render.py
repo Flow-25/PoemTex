@@ -102,6 +102,19 @@ def _align_command(alignment: str, theme_default: str) -> str:
     return {"left": "PoemLine", "center": "PoemLineCenter", "right": "PoemLineRight"}[alignment]
 
 
+def _poem_measure_em(poem: Poem, theme: Theme) -> float:
+    """Estimate a comfortable verse measure for centered-title/left-body layouts."""
+    if theme.title_align != "center" or theme.poem_align != "left":
+        return 0.0
+    longest = max(
+        (len(item.text.expandtabs(4)) for item in poem.body if isinstance(item, TextLine)),
+        default=0,
+    )
+    # The TeX side caps this at the available width. The floor keeps short poems
+    # from collapsing into a narrow column while still centering their text block.
+    return max(28.0, longest * 0.55)
+
+
 def _render_poem(poem: Poem, theme: Theme, smart: bool, add_to_contents: bool = True) -> str:
     title = _title_case(inline_tex(poem.title, smart), theme.poem_title_case)
     subtitle = inline_tex(poem.subtitle, smart) if poem.subtitle else ""
@@ -112,7 +125,7 @@ def _render_poem(poem: Poem, theme: Theme, smart: bool, add_to_contents: bool = 
         parts.append(r"\PoemDedication{" + inline_tex(poem.dedication, smart) + "}")
     if poem.epigraph:
         parts.append(r"\PoemEpigraph{" + inline_tex(poem.epigraph, smart) + "}{" + inline_tex(poem.epigraph_author, smart) + "}")
-    parts.append(r"\begin{PoemBody}")
+    parts.append(rf"\begin{{PoemBody}}{{{_poem_measure_em(poem, theme):.2f}}}")
     for index, item in enumerate(poem.body):
         if isinstance(item, StanzaBreak):
             parts.append(rf"\StanzaBreak{{{item.lines}}}")
@@ -181,10 +194,23 @@ def render_collection(collection: Collection, theme: Theme) -> str:
   \if\relax\detokenize{{#2}}\relax\else\\[.35em]\fontsize{{{theme.body_size}}}{{{theme.line_height}}}\selectfont\color{{PoemAccent}}#2\fi
   \par}}\vspace{{{theme.poem_title_gap_em}em}}%
 }}%
-\newenvironment{{PoemBody}}{{\fontsize{{{theme.body_size}}}{{{theme.line_height}}}\selectfont}}{{\par}}
+\newdimen\PoemBodyWidth
+\newdimen\PoemBodyInset
+\newenvironment{{PoemBody}}[1]{{%
+  \fontsize{{{theme.body_size}}}{{{theme.line_height}}}\selectfont
+  \PoemBodyInset=0pt
+  \PoemBodyWidth=#1em
+  \ifdim\PoemBodyWidth>0pt
+    \ifdim\PoemBodyWidth>.94\linewidth\PoemBodyWidth=.94\linewidth\fi
+    \PoemBodyInset=\linewidth
+    \advance\PoemBodyInset by -\PoemBodyWidth
+    \divide\PoemBodyInset by 2
+  \fi
+  \leftskip=\PoemBodyInset\rightskip=\PoemBodyInset
+}}{{\par}}
 \newcommand{{\PoemLine}}[1]{{\par\noindent\hangindent={theme.continuation_indent_em}em\hangafter=1 #1\par}}
-\newcommand{{\PoemLineCenter}}[1]{{\par{{\leftskip=0pt plus 1fil\rightskip=0pt plus 1fil\parfillskip=0pt #1\par}}}}
-\newcommand{{\PoemLineRight}}[1]{{\par{{\leftskip=0pt plus 1fil\parfillskip=0pt #1\par}}}}
+\newcommand{{\PoemLineCenter}}[1]{{\par{{\leftskip=\PoemBodyInset plus 1fil\rightskip=\PoemBodyInset plus 1fil\parfillskip=0pt #1\par}}}}
+\newcommand{{\PoemLineRight}}[1]{{\par{{\leftskip=\PoemBodyInset plus 1fil\rightskip=\PoemBodyInset\parfillskip=0pt #1\par}}}}
 \newcommand{{\StanzaBreak}}[1]{{\par\vspace{{#1\dimexpr {theme.stanza_gap_em}em\relax}}}}
 \newcommand{{\PoemDedication}}[1]{{\begin{{flushright}}\itshape\color{{PoemAccent}}#1\end{{flushright}}\vspace{{1em}}}}
 \newcommand{{\PoemEpigraph}}[2]{{\begin{{flushright}}\begin{{minipage}}{{.68\textwidth}}\itshape #1\if\relax\detokenize{{#2}}\relax\else\\[.35em]\upshape\small— #2\fi\end{{minipage}}\end{{flushright}}\vspace{{1.2em}}}}
