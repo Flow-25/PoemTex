@@ -1,0 +1,420 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[english,polish]{babel}
+\usepackage[a4paper,margin=25mm,headheight=22pt]{geometry}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{fancyvrb}
+
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{Latin Modern Mono}[Scale=0.88]
+\definecolor{Ink}{HTML}{211E1A}
+\definecolor{Accent}{HTML}{765F49}
+\definecolor{Paper}{HTML}{FCFAF6}
+\definecolor{Rule}{HTML}{D8CFC4}
+\pagecolor{Paper}
+\color{Ink}
+\hypersetup{colorlinks=true,linkcolor=Accent,urlcolor=Accent,pdftitle={PoemTeX User Guide}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist{itemsep=0.2em,topsep=0.35em}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\small PoemTeX}
+\fancyhead[R]{\sffamily\small User guide}
+\fancyfoot[C]{\sffamily\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{Rule}\leaders\hrule height \headrulewidth\hfill}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\directive}[1]{\texttt{@#1}}
+\newcommand{\yes}{\textcolor{Accent}{\textbullet}\ }
+\newenvironment{poemcode}{\VerbatimEnvironment\begin{Verbatim}[fontsize=\small,frame=single,rulecolor=\color{Rule},xleftmargin=1em,xrightmargin=1em]}{\end{Verbatim}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{document}
+\selectlanguage{english}
+\hypersetup{pageanchor=false}
+
+\begin{titlepage}
+  \vspace*{0.19\textheight}
+  {\sffamily\footnotesize\color{Accent}\MakeUppercase{Write poems, not TeX}\par}
+  \vspace{1.2em}
+  {\fontsize{34}{39}\selectfont PoemTeX\par}
+  \vspace{0.25em}
+  {\Large User guide\par}
+  \vspace{2.5em}
+  {\large A small language for writing poems and building beautiful PDFs\par}
+  \vfill
+  {\small Version 0.2.0 \quad Linux \quad \texttt{.poem} format 0.1\par}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+\tableofcontents
+\clearpage
+
+\section{The essentials: what you need to know}
+
+PoemTeX lets you write plain \code{.poem} files. You do not write or edit TeX:
+the \code{poem} command validates your text, generates hidden LaTeX, and builds
+the PDF. A collection has one main file, normally \code{book.poem}, and any
+number of included poem fragments. Only the collection is a finished book;
+individual fragments can still be previewed.
+
+\subsection{Start a collection}
+
+From this repository, use \code{./poem}. If you installed the package, use
+\code{poem} instead. First check the machine, create a project, and enter it:
+
+\begin{poemcode}
+./poem doctor
+./poem init my-poems
+cd my-poems
+\end{poemcode}
+
+The new project has this simple shape:
+
+\begin{poemcode}
+my-poems/
+  book.poem              main collection file
+  poems/pierwszy.poem    one poem fragment
+  theme/theme.toml       optional visual customization
+\end{poemcode}
+
+\subsection{Write and include poems}
+
+The main \code{book.poem} contains book information and includes, not verse:
+
+\begin{poemcode}
+@collection
+@title "Światło i cisza"
+@author "Anna Kowalska"
+@language pl
+@theme literary-classic
+@paper a5
+
+@section "Światło"
+@include poems/poranek.poem
+@include poems/okno.poem
+\end{poemcode}
+
+Each included file contains one poem:
+
+\begin{poemcode}
+@title "Poranek"
+
+Pierwsza linia,
+    linia z wcięciem.
+
+Druga strofa ma *cichy akcent*
+i **mocniejsze słowo**.
+\end{poemcode}
+
+Create and include a new fragment automatically with:
+
+\begin{poemcode}
+./poem new "Nocne światło"
+\end{poemcode}
+
+\subsection{Check, preview, and build}
+
+Run these commands inside the project directory:
+
+\begin{longtable}{@{}L{0.29\textwidth}L{0.65\textwidth}@{}}
+\toprule
+\textbf{Command} & \textbf{Purpose} \\
+\midrule
+\endhead
+\code{./poem check} & Validate every source without running TeX. \\
+\code{./poem preview} & Build, open the PDF, and rebuild whenever a source changes. Press Ctrl+C to stop. \\
+\code{./poem build} & Produce the finished PDF in \code{build/}. \\
+\code{./poem gallery} & Build comparable previews of all eight themes. \\
+\bottomrule
+\end{longtable}
+
+To focus on one poem while retaining its collection's language, paper, author,
+and custom theme, run \code{./poem preview poems/poranek.poem}. A fragment cannot
+be built as a finished collection by itself.
+
+\subsection{The five writing rules worth remembering}
+
+\begin{enumerate}
+  \item One nonblank source line is one poetic line. Blank lines separate stanzas.
+  \item Leading and repeated spaces are preserved; trailing spaces are ignored.
+  \item Use \code{*italic*}, \code{**bold**}, and \code{\{smallcaps: Text\}}.
+  \item Use \code{@align left}, \code{@align center}, or \code{@align right}, then
+        close that block with \code{@end}. Use \code{@space 1} through \code{@space 5}
+        for a deliberate larger gap.
+  \item Never paste raw TeX into a poem. TeX characters are treated as safe text,
+        and files generated under \code{build/} should not be edited.
+\end{enumerate}
+
+That is enough for everyday use. The remainder is a complete reference.
+
+\clearpage
+\section{Complete reference}
+
+\subsection{Requirements and installation}
+
+PoemTeX supports Linux and Python 3.11 or newer. PDF output requires an ordinary
+TeX Live installation with LuaLaTeX and the common packages \code{babel},
+\code{fontspec}, \code{geometry}, \code{microtype}, \code{needspace},
+\code{fancyhdr}, \code{hyperref}, and \code{xcolor}. \code{latexmk} is
+recommended; without it PoemTeX runs LuaLaTeX twice. \code{xdg-open} is optional
+and opens previews. Run \code{./poem doctor} for an exact local report.
+
+The repository launcher needs no Python installation:
+
+\begin{poemcode}
+./poem --help
+\end{poemcode}
+
+For a system-independent development installation, create a virtual environment:
+
+\begin{poemcode}
+python3 -m venv .venv
+.venv/bin/pip install -e .
+.venv/bin/poem --help
+\end{poemcode}
+
+\subsection{File model, encoding, and safety}
+
+All sources use UTF-8 and the \code{.poem} extension. A byte-order mark is
+accepted. The first meaningful line of a collection must be \directive{collection};
+a file without it is a fragment. A collection may contain directives only.
+Verse belongs in fragments and enters the book through explicit \directive{include}
+directives, in written order.
+
+Include paths are relative to the directory containing the main collection.
+They must end in \code{.poem}, may not escape the project directory, may not point
+to another collection, and may occur only once. Theme files have the same
+project-boundary protection. No language construct can inject raw TeX; special
+characters such as \code{\%}, \code{\#}, \code{\&}, braces, dollar signs, and
+backslashes are escaped by the compiler.
+
+\subsection{Collection directives}
+
+Quoted and unquoted values are accepted. Quoting is useful when a value contains
+spaces. Directive names are case-insensitive, though lowercase is conventional.
+
+\begin{longtable}{@{}L{0.29\textwidth}L{0.47\textwidth}L{0.16\textwidth}@{}}
+\toprule
+\textbf{Directive} & \textbf{Meaning and accepted values} & \textbf{Default} \\
+\midrule
+\endhead
+\directive{collection} & Marks the main file; first meaningful line, no value. & required \\
+\directive{title TEXT} & Collection title. & required \\
+\directive{author TEXT} & Collection author. & required \\
+\directive{subtitle TEXT} & Optional subtitle. & empty \\
+\directive{language pl} & \code{pl}/\code{polish} or \code{en}/\code{english}. & \code{pl} \\
+\directive{theme NAME} & Select a built-in theme. & \code{literary-classic} \\
+\directive{theme-file PATH} & Load safe TOML overrides from inside the project. & none \\
+\directive{paper a5} & \code{a5}, \code{a4}, or \code{letter}. & \code{a5} \\
+\directive{dedication TEXT} & Front-matter dedication. & empty \\
+\directive{epigraph TEXT} & Front-matter epigraph. & empty \\
+\directive{epigraph-author TEXT} & Attribution; normally used with \directive{epigraph}. & empty \\
+\directive{contents yes} & \code{yes/true/on} or \code{no/false/off}. & \code{yes} \\
+\directive{page-numbers yes} & Enable or disable printed page numbers. & \code{yes} \\
+\directive{smart-quotes yes} & Convert balanced straight double quotes typographically. & \code{yes} \\
+\directive{poem-pages new} & \code{new} starts each poem on a page; \code{flow} does not. & \code{new} \\
+\directive{section TEXT} & Insert a named collection division at this position. & optional \\
+\directive{include PATH} & Insert one poem fragment at this position. & repeatable \\
+\bottomrule
+\end{longtable}
+
+A collection-level author is inherited for a focused fragment preview. A poem
+may provide its own author when needed.
+
+\subsection{Poem headers, body directives, and comments}
+
+Before its first body line, a fragment accepts \directive{title} (required),
+\directive{subtitle}, \directive{author}, \directive{dedication},
+\directive{epigraph}, and \directive{epigraph-author}. Each header directive
+may appear at most once. After the body starts, metadata directives are no
+longer accepted.
+
+Alignment blocks override the theme's default body alignment:
+
+\begin{poemcode}
+@align right
+tekst po prawej
+jeszcze jedna linia
+@end
+
+@space 3
+kolejna część
+\end{poemcode}
+
+The value of \directive{align} is \code{left}, \code{center}, or \code{right}.
+Blocks cannot nest and every block must end with a value-less \directive{end}.
+\directive{space N} accepts a whole number from 1 to 5 and creates a controlled
+vertical break; when it follows an ordinary blank stanza break, it replaces it.
+A full-line private comment begins with \code{;;} after optional indentation.
+
+\subsection{Whitespace, wrapping, and inline text}
+
+Whitespace is part of the public format:
+
+\begin{itemize}
+  \item Every nonblank body line creates one poetic line in order.
+  \item Leading spaces and repeated spaces within a line are visually preserved.
+  \item Tabs advance to four-space tab stops and trigger a warning; use spaces.
+  \item Trailing whitespace has no effect. Any run of blank lines becomes one
+        stanza break, so accidental extra blank lines do not change pagination.
+  \item Long lines wrap at word boundaries with the theme's continuation indent.
+        Automatic hyphenation is disabled. An unbroken token longer than 55
+        characters triggers a possible-overflow warning.
+  \item PoemTeX strongly discourages page breaks within a stanza, but an unusually
+        long stanza may flow to the next page instead of overflowing.
+\end{itemize}
+
+Inline forms are intentionally few: \code{*text*} is emphasis (normally italic),
+\code{**text**} is strong text (normally bold), and \code{\{smallcaps: text\}}
+uses small capitals. A backslash escapes \code{*}, a backslash, or a straight
+double quote. Unpaired styling markers are printed literally. With Polish smart
+quotes enabled, balanced \code{"..."} pairs become Polish quotation marks;
+apostrophes and unmatched quotes are not guessed or rewritten.
+
+\subsection{Built-in themes and temporary comparison}
+
+\begin{longtable}{@{}L{0.25\textwidth}L{0.69\textwidth}@{}}
+\toprule
+\textbf{Theme} & \textbf{Character} \\
+\midrule
+\endhead
+\code{literary-classic} & Warm, restrained general-purpose literary book; the default. \\
+\code{modern-minimal} & Airy contemporary sans-serif editorial design. \\
+\code{quiet-manuscript} & Intimate monospaced body with restrained serif headings. \\
+\code{romantic-garden} & Ivory ground, rose details, and rounded lyrical type. \\
+\code{midnight-ink} & Dark navy, screen-oriented atmospheric edition. \\
+\code{editorial-serif} & Confident journal typography with crisp sans-serif headings. \\
+\code{spare-haiku} & Centered headings, left-set verse, and radical whitespace. \\
+\code{bold-broadsheet} & Large poster-like display titles and compact serif text. \\
+\bottomrule
+\end{longtable}
+
+List themes with \code{./poem themes}; add \code{--details} for measurements and
+fonts. Compare without editing \code{book.poem} using
+\code{./poem preview --theme modern-minimal} or build a separate result using
+\code{./poem build --theme quiet-manuscript -o build/manuscript}.
+
+\subsection{Custom themes: the metatemplate}
+
+Themes are safe design-token files, not TeX. Print a complete starting file with:
+
+\begin{poemcode}
+./poem themes --example romantic-garden
+\end{poemcode}
+
+Save its output as, for example, \code{theme/theme.toml}, then add
+\code{@theme-file theme/theme.toml} to the collection. The first setting chooses
+a built-in foundation:
+
+\begin{poemcode}
+extends = "literary-classic"
+body_size = 11.2
+line_height = 16.0
+stanza_gap_em = 1.15
+accent_color = "6F5944"
+background_color = "FFFCF8"
+\end{poemcode}
+
+Every supported token is listed below. Sizes and line heights are points;
+margins are millimetres; gaps and continuation indent are multiples of the
+current type size; colors are six hexadecimal digits without \code{\#}.
+
+\begin{longtable}{@{}L{0.34\textwidth}L{0.60\textwidth}@{}}
+\toprule
+\textbf{Tokens} & \textbf{What they control} \\
+\midrule
+\endhead
+\code{body\_font}, \code{title\_font} & Installed font-family names. \\
+\code{body\_size}, \code{line\_height} & Verse size and baseline distance. \\
+\code{poem\_title\_size}, \code{collection\_title\_size} & Display type sizes. \\
+\code{margin\_inner\_mm}, \code{margin\_outer\_mm}, \code{margin\_top\_mm}, \code{margin\_bottom\_mm} & Page margins. \\
+\code{stanza\_gap\_em}, \code{poem\_title\_gap\_em}, \code{section\_gap\_em} & Vertical rhythm. \\
+\code{continuation\_indent\_em} & Hanging indent for wrapped poetic lines. \\
+\code{title\_align}, \code{poem\_align}, \code{section\_align} & \code{left}, \code{center}, or \code{right}. \\
+\code{page\_number\_position} & \code{outer}, \code{center}, or \code{hidden}. \\
+\code{ornament} & Short plain-text divider, at most 12 characters. \\
+\code{text\_color}, \code{accent\_color}, \code{background\_color} & Text, detail, and paper colors. \\
+\code{title\_letter\_spacing}, \code{section\_letter\_spacing} & Tracking for display text. \\
+\code{collection\_title\_case}, \code{poem\_title\_case}, \code{section\_case} & \code{as-written}, \code{uppercase}, or \code{lowercase}. \\
+\code{title\_page\_top\_fraction} & Vertical title-page starting position. \\
+\code{section\_title\_size} & Section heading size. \\
+\bottomrule
+\end{longtable}
+
+Unknown tokens, invalid choices, unsafe font names, and out-of-range measurements
+are errors. PoemTeX also rejects body leading below 110\% of the body size and
+text/background contrast below 3:1. Run \code{./poem check} after each design
+change. The exact numeric ranges and current defaults can be inspected with
+\code{./poem themes --example THEME}.
+
+\subsection{Command-line reference}
+
+\begin{longtable}{@{}L{0.37\textwidth}L{0.57\textwidth}@{}}
+\toprule
+\textbf{Form} & \textbf{Behavior} \\
+\midrule
+\endhead
+\code{poem init NAME} & Create a complete starter project. The target must be absent or empty. \\
+\code{poem new TITLE} & Create a slug-named poem under \code{poems/} and append its include. \\
+\code{poem new TITLE --filename X.poem} & Choose a simple file name explicitly. \\
+\code{poem new TITLE --directory DIR} & Choose an in-project fragment directory. \\
+\code{poem new TITLE --no-include} & Create the fragment without changing the collection. \\
+\code{poem new TITLE --collection ROOT} & Select a non-default main file. \\
+\code{poem check [SOURCE]} & Parse and validate, but do not invoke TeX. \\
+\code{poem build [SOURCE] [-o DIR]} & Build a collection PDF. \\
+\code{poem build --theme NAME} & Temporarily override the built-in theme. \\
+\code{poem preview [SOURCE]} & Build, open, and continuously watch all dependencies. \\
+\code{poem preview --no-open} & Watch without launching a viewer. \\
+\code{poem preview --once} & Build a preview once and exit. \\
+\code{poem gallery [SOURCE] [-o DIR]} & Build identical comparisons of every theme. \\
+\code{poem gallery --open} & Also open the generated HTML index. \\
+\code{poem themes [--details]} & List built-in themes and optionally their principal tokens. \\
+\code{poem themes --example NAME} & Print a complete valid TOML metatemplate. \\
+\code{poem doctor} & Check Python, TeX commands, packages, and theme fonts. \\
+\code{poem --version} & Print the installed PoemTeX version. \\
+\bottomrule
+\end{longtable}
+
+When no source is given, PoemTeX prefers \code{book.poem}; otherwise it uses the
+only collection in the current directory. If several collections exist, name
+one explicitly. The default output directory is \code{build/}. Generated
+\code{.tex}, logs, and supporting files are implementation output: inspect them
+only for diagnosis and never maintain them as source.
+
+\subsection{Diagnostics and troubleshooting}
+
+Errors identify the source file and line when possible and usually offer a fix.
+Invalid UTF-8, unknown or duplicate directives, missing required metadata,
+unsafe or repeated includes, nested/unclosed alignment blocks, and invalid
+theme values stop the build. Tabs, empty poems, orphaned epigraph attributions,
+very long tokens, and empty sections are warnings.
+
+During continuous preview, an invalid edit does not destroy the last successful
+PDF: PoemTeX reports the error and keeps watching. Common recovery steps are:
+
+\begin{enumerate}
+  \item Run \code{poem check} to isolate language or include errors quickly.
+  \item Run \code{poem doctor} if PDF compilation tools or fonts appear missing.
+  \item Ensure every \directive{align} has an \directive{end}, and every include
+        stays inside the project and ends in \code{.poem}.
+  \item Run \code{poem build} again. If TeX itself fails, PoemTeX summarizes the
+        useful diagnostic instead of exposing the full TeX stack trace.
+\end{enumerate}
+
+The compact normative specification is \code{FORMAT.md}; this guide is the
+task-oriented companion. The project is an evolving open-source prototype, so
+keep source files in version control and consult \code{CHANGELOG.md} when
+upgrading.
+
+\end{document}

@@ -1,0 +1,4 @@
+# The built-in theme supplies every value. Uncomment only what you want to alter.
+extends = "literary-classic"
+accent_color = "756653"
+ornament = "•"

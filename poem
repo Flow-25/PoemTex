@@ -1,0 +1,4 @@
+#!/bin/sh
+# Development launcher: works without installing a Python package.
+POEMTEX_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PYTHONPATH="$POEMTEX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m poemtex.cli "$@"

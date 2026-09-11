@@ -1,0 +1,22 @@
+@collection
+@title "Światło i cisza"
+@subtitle "Trzy krótkie wiersze"
+@author "Anna Kowalska"
+@language pl
+@theme literary-classic
+@theme-file theme/theme.toml
+@paper a5
+@dedication "Tym, którzy słuchają ciszy"
+@epigraph "Światło wraca najciszej."
+@epigraph-author "z notatnika"
+@contents yes
+@page-numbers yes
+@smart-quotes yes
+
+@section "Przed świtem"
+@include poems/poranek.poem
+@include poems/okno.poem
+
+@section "Po deszczu"
+@include poems/deszcz.poem
+
